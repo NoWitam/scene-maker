@@ -3,7 +3,8 @@
 namespace src;
 
 use Exception;
-use src\Components\Enums\Event;
+use src\Animations\Animation;
+use src\Components\Enums\ComponentEvent;
 use src\Components\Component;
 
 class VideoEditor
@@ -11,8 +12,6 @@ class VideoEditor
     private string $background = "#FFFFFF";
     private int $fps = 60;
     private array $timeline = [];
-    private float $length = 0;
-    private array $events = [];
     private array $components = [];
     private int $frame = 0;
 
@@ -58,19 +57,24 @@ class VideoEditor
         return $this;
     }
 
-    public function addComponentRelative(Component $component, ?string $componentStartName = null, ?string $componentEndName = null, Event $startType = Event::START, Event $endType = Event::END) : self
+    public function addComponentRelative(Component $component, ?string $componentStartName = null, ?string $componentEndName = null, ComponentEvent $startEvent = ComponentEvent::START, ComponentEvent $endEvent = ComponentEvent::END) : self
     {
         if(isset($componentStartName)) {
             $startComponent = $this->getComponent($componentStartName);
-            $component->setStart($startType->getTime($startComponent));
+            $component->setStart($startEvent->getTime($startComponent));
         }
 
         if(isset($componentEndName)) {
             $endComponent = $this->getComponent($componentEndName);
-            $component->setEnd($endType->getTime($endComponent));
+            $component->setEnd($endEvent->getTime($endComponent));
         }
 
         return $this->addComponent($component);
+    }
+
+    public function addComponentParallel(Component $component, string $componentName)
+    {
+        return $this->addComponentRelative($component, $componentName, $componentName);
     }
 
     public function addComponent(Component $component) : self
@@ -87,6 +91,85 @@ class VideoEditor
         return $this;
     }
 
+    public function getComponentLength(string $componentName) : float
+    {
+        return $this->getComponent($componentName)->getLength();
+    }
+
+    public function getComponentTime(string $componentName, ComponentEvent $event) : float
+    {
+        return $event->getTime($this->getComponent($componentName));
+    }
+
+    public function getComponentTimes(string $componentName, ComponentEvent ...$events) : array
+    {
+        return array_combine(
+            $events,
+            array_map(
+                function (ComponentEvent $event) use ($componentName) {
+                    return $event->getTime($this->getComponent($componentName));
+                }, $events
+            )
+        );
+    }
+
+    public function attachAnimationToComponent(string $componentName, Animation $animation) : self
+    {
+        $this->getComponent($componentName)->attachAnimation($animation);
+
+        return $this;
+    }
+
+    public function attachAnimationRelativeToComponent(string $componentName, Animation $animation, ComponentEvent $event) : self
+    {
+        $this->getComponent($componentName)->attachAnimationRelative($animation, $event);
+        
+        return $this;
+    }
+
+    public function attachStartingAnimationToComponent(string $componentName, Animation $animation) : self
+    {
+        $this->getComponent($componentName)->attachStartingAnimation($animation);
+
+        return $this;
+    }
+
+    public function attachEndingAnimationToComponent(string $componentName, Animation $animation) : self
+    {
+        $this->getComponent($componentName)->attachEndingAnimation($animation);
+
+        return $this;
+    }
+
+    public function attachAnimationCustomToComponent(
+        string $componentName, Animation $animation, string $componentStartName, ComponentEvent $startEvent, string $componentEndName, ComponentEvent $endEvent
+    ) : self
+    {
+        $this->getComponent($componentName)->attachAnimation(
+            $animation
+                ->setStart($startEvent->getTime($this->getComponent($componentStartName)))
+                ->setEnd($endEvent->getTime($this->getComponent($componentEndName)))
+        );
+
+        return $this;
+    }
+    
+    private function generateTimeline() 
+    {
+        $this->timeline = [];
+        
+        foreach($this->components as $component)
+        {
+            if(isset($this->timeline[$component->getStart()])) {
+                $this->timeline[$component->getStart()][] = $component;
+            } else {
+                $this->timeline[$component->getStart()] = [$component];
+            }
+        }
+
+        ksort($this->timeline);
+    }
+
     private function getTime() : float
     {
         return $this->frame / $this->fps;
@@ -94,14 +177,16 @@ class VideoEditor
 
     public function run()
     {
+        $this->generateTimeline();
         foreach($this->generateFrame() as $frame)
         {
             echo $frame . "\n";
         }
     }
 
-    public function showFrame(float $time)
+    public function showTime(float $time)
     {
+        $this->generateTimeline();
         foreach($this->generateFrame() as $frame)
         {
             if($time < $this->getTime()) {
@@ -111,25 +196,25 @@ class VideoEditor
         }
     }
 
-    private function generateFrame()
+    public function showFrame(int $frameCount)
     {
-        $timeline = [];
-        foreach($this->components as $component)
+        $this->generateTimeline();
+        foreach($this->generateFrame() as $frame)
         {
-            if(isset($timeline[$component->getStart()])) {
-                $timeline[$component->getStart()][] = $component;
-            } else {
-                $timeline[$component->getStart()] = [$component];
+            if($this->frame == $frameCount) {
+                echo $frame;
+                break;
             }
         }
+    }
 
-        ksort($timeline);
-
-        while(count($timeline))
+    private function generateFrame()
+    {
+        while(count($this->timeline))
         {
             $html = '<link rel="stylesheet" href="assets/style.css"><body><div id="screen" style="background: ' . $this->background . '">';
 
-            foreach($timeline as $time => $components)
+            foreach($this->timeline as $time => $components)
             {
                 if($time > $this->getTime()) {
                     break;
@@ -154,17 +239,4 @@ class VideoEditor
             yield $html;
         }
     }
-
-
-
-    /*
-    function __toString()
-    {
-        return <<<GFG
-            <link rel="stylesheet" href="assets/style.css">
-            <div id="screen" style="background: $this->background">essa</div>
-        GFG;
-    }
-    */
-
 }
