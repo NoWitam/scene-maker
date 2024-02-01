@@ -16,7 +16,7 @@ trait HasRotate
     public function stylesHasRotate(): array
     {
         return [
-            "transform" => "rotate({$this->rotate}deg)"
+            "rotate" => "{$this->rotate}deg"
         ];
     }
 

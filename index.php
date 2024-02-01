@@ -1,5 +1,6 @@
 <?php
 
+use src\Animations\Rotate;
 use src\Components\Enums\Event;
 use src\Components\Enums\TextAlign;
 use src\Components\Image;
@@ -27,28 +28,33 @@ try {
 
 
     $a = new VideoEditor();
-    $a->setFps(1);
-    $a->addChainComponents(0, 
-        Image::make('image1')->setLength(5)->size(800, 450)->position(0, 0)->url("assets/img/roman_soliders.jpg"),
-        Image::make('image2')->setLength(2),
-    );
+    $a->setFps(60);
+
+    // $a->addChainComponents(0, 
+    //     Image::make('image1')->setLength(5)->size(800, 450)->position(0, 0)->url("assets/img/roman_soliders.jpg"),
+    //     Image::make('image2')->setLength(2)->size(800, 450)->url("assets/img/roman_soliders.jpg"),
+    // );
 
     $a->addComponent(
-        Text::make('text1')->setStart(4)->setLength(2)->size(400, 225)->position(100, 100)
+        Text::make('text1')->setStart(0)->setLength(10)->size(400, 225)->position(100, 100, 1)
             ->text("Witamy w naszej bajce")
             ->fontSize(40)
             ->align(TextAlign::CENTER)
             ->color('white')
             ->stroke(5, 'green')
+            ->attachStartingAnimation(
+                Rotate::make('animation1')->setLength(4)->degree(180)
+            )
+            // ->rotate(15)
     );
 
-    $a->addComponentRelative(
-        Image::make('imageStart')->setLength(2)->setDelay(1),
-        componentStartName: 'image1',
-        startType: Event::END
-    );
+    // $a->addComponentRelative(
+    //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(800, 450)->url("assets/img/roman_soliders.jpg"),
+    //     componentStartName: 'image1',
+    //     startType: Event::END
+    // );
 
-   $a->showFrame(4);
+   $a->showTime(2);
 
 } catch( Throwable $e ) { 
     echo $e->getMessage() . "\n";

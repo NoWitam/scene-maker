@@ -25,6 +25,11 @@ img {
 
 .container {
     position: absolute;
+    animation-play-state: paused;
+}
+
+.animations {
+    display: none;
 }
 
 .textbox {
@@ -50,4 +55,22 @@ img {
     font-size: 1em;
     -webkit-text-stroke-color: var(--stroke-color);
     -webkit-text-stroke-width: var(--stroke-size);
+}
+
+@keyframes rotate {
+    0% {
+      rotate: 0deg;
+    }
+    100% {
+      rotate: 90deg;
+    }
+}
+
+@keyframes move {
+    0% {
+      translate: 0px;
+    }
+    100% {
+        translate: 100px;
+    }
 }
