@@ -39,7 +39,6 @@ try {
             ->fontSize(40)
             ->align(TextAlign::CENTER)
             ->color('white')
-            ->rotate(30)
             ->stroke(5, 'green')
     );
 

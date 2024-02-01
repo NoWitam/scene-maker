@@ -2,7 +2,7 @@
 
 namespace src\Components\Enums;
 
-use src\Component;
+use src\Components\Component;
 
 enum Event : string
 {

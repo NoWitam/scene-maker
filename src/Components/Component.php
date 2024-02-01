@@ -1,6 +1,6 @@
 <?php
 
-namespace src;
+namespace src\Components;
 
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;

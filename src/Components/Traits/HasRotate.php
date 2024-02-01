@@ -4,9 +4,9 @@ namespace src\Components\Traits;
 
 trait HasRotate
 {
-    protected ?float $rotate = null;
+    protected float $rotate = 0;
 
-    public function rotate(?int $degrees = null): self
+    public function rotate(int $degrees): self
     {
         $this->rotate = $degrees;
 

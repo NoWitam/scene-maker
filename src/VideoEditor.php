@@ -4,6 +4,7 @@ namespace src;
 
 use Exception;
 use src\Components\Enums\Event;
+use src\Components\Component;
 
 class VideoEditor
 {

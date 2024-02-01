@@ -2,7 +2,6 @@
 
 namespace src\Components;
 
-use src\Component;
 use src\Components\Traits\HasRotate;
 use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;

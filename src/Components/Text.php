@@ -2,7 +2,6 @@
 
 namespace src\Components;
 
-use src\Component;
 use src\Components\Enums\TextAlign;
 use src\Components\Traits\HasRotate;
 use src\HtmlTags\HtmlTag;
