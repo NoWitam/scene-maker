@@ -32,24 +32,15 @@ abstract class Animation implements CanHaveTime
 
     abstract protected function recipe() : array;
 
-    public function render(float $time, string $parentName) : string
+    public function render(string $parentName) : string
     {
         $content = "@keyframes {$parentName}-{$this->name} {";
 
         foreach($this->recipe() as $percents => $effects)
         {
-            if(is_array($percents)) {
-                if($percents !== array_filter($percents, function($value) {
-                    return $this->isProcent($value);
-                })) {
-                    throw new Error("Animation {$this->name} on component {$parentName} is not valid");
-                }
 
-                $percents = implode("%, ", $percents);
-            } else {
-                if(!$this->isProcent($percents)) {
-                    throw new Error("Animation {$this->name} on component {$parentName} is not valid"); 
-                }
+            if(!$this->isProcent($percents)) {
+                throw new Error("Animation {$this->name} on component {$parentName} is not valid"); 
             }
 
             $percents .= "%";
@@ -115,7 +106,7 @@ abstract class Animation implements CanHaveTime
         return $this->direction->value;
     }
 
-    public function interation(int $iteration) : self
+    public function interation(?int $iteration) : self
     {
         $this->iteration = $iteration;
 

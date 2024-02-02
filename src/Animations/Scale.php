@@ -4,25 +4,25 @@ namespace src\Animations;
 
 use src\Animations\Animation;
 
-class Rotate extends Animation
+class Scale extends Animation
 {
-    protected float $degree = 0;
+    protected float $scale = 1.5;
 
     protected function recipe() : array
     {
         return [
             0 => [
-                "rotate" => "0deg"
+                "transform" => "scale(1)"
             ],
             100 => [
-                "rotate" => "{$this->degree}deg"
+                "transform" => "scale({$this->scale})"
             ]
         ];
     }
 
-    public function degree(float $degree) : self
+    public function scale(float $scale) : self
     {
-        $this->degree = $degree;
+        $this->scale = $scale;
 
         return $this;
     }

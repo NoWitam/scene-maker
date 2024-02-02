@@ -6,6 +6,7 @@ use Exception;
 use src\Animations\Animation;
 use src\Animations\Rotate;
 use src\Components\Enums\ComponentEvent;
+use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;
 use src\Interfaces\CanHaveTime;
@@ -33,17 +34,29 @@ abstract class Component implements CanHaveTime
 
     public function render(float $time): string
     {
-        $animations = count($this->animations) == 0 ? "zerio" : 
+        $animations = count($this->animations) == 0 ? "" : 
         OpenHtmlTag::make(
             tag: 'div',
             classes: ['animations'],
             content: implode("\n", array_map(
-                function ($animation) use ($time) { 
-                    return $animation->render($time, $this->name);
+                function ($animation) { 
+                    return $animation->render($this->name);
                 },
                 $this->animations
             ))
         );
+
+        $animationsOpenLayer = "";
+        $aniamtionCloseLayer = "";
+        foreach($this->animations as $animation)
+        {
+            $animationsOpenLayer .= CloseHtmlTag::make(
+                tag: 'div',
+                classes: ['animation'],
+                styles: $this->animationStyle($animation, $time)
+            );
+            $aniamtionCloseLayer = "</div>";
+        }
 
         return OpenHtmlTag::make(
             tag: 'div',
@@ -54,10 +67,9 @@ abstract class Component implements CanHaveTime
                 'width' => $this->width . "px",
                 'top' => $this->y . "px",
                 'left' => $this->x . "px",
-                'z-index' => $this->z,
-                ...$this->animationStyle($time)
+                'z-index' => $this->z
             ],
-            content: $this->tag($time) . $animations
+            content: $animations . $animationsOpenLayer . $this->tag($time) . $aniamtionCloseLayer
         );
     }
 
@@ -164,69 +176,20 @@ abstract class Component implements CanHaveTime
         return array_merge($traitsStyles, $componentStyles);
     }
 
-    private function animationStyle(float $time) : array
+    private function animationStyle(Animation $animation, float $time) : array
     {
-        if(count($this->animations)) {
-            $names = implode(", ", array_map(
-                function($animation) {
-                    return $this->getName() . "-" . $animation->getName();
-                },
-                $this->animations
-            ));
+        $name = $this->getName() . "-" . $animation->getName();
+        $duration = ($animation->getEnd() - $animation->getStart()) . "s";
+        $delay = ($animation->getStart() - $time) . "s";
 
-            $durations = implode(", ", array_map(
-                function($animation) {
-                    return ($animation->getEnd() - $animation->getStart()) . "s";
-                },
-                $this->animations
-            ));
-
-            $delays = implode(", ", array_map(
-                function($animation) use ($time) {
-                    return ($animation->getStart() - $time) . "s";
-                },
-                $this->animations
-            ));
-
-            $fillModes = implode(", ", array_map(
-                function($animation) {
-                    return $animation->getFillMode();
-                },
-                $this->animations
-            ));
-
-            $timingFunctions = implode(", ", array_map(
-                function($animation) {
-                    return $animation->getTimingFunction();
-                },
-                $this->animations
-            ));
-
-            $directions = implode(", ", array_map(
-                function($animation) {
-                    return $animation->getDirection();
-                },
-                $this->animations
-            ));
-
-            $iterations = implode(", ", array_map(
-                function($animation) {
-                    return $animation->getDirection();
-                },
-                $this->animations
-            ));
-
-            return [
-                "animation-name" => $names,
-                "animation-duration" => $durations,
-                "animation-delay" => $delays,
-                "animation-fill-mode" => $fillModes,
-                "animation-timing-function" => $timingFunctions,
-                "animation-direction" => $directions,
-                "animation-iteration-count" => $iterations,
-            ];
-        }
-
-        return [];
+        return [
+            "animation-name" => $name,
+            "animation-duration" => $duration,
+            "animation-delay" => $delay,
+            "animation-fill-mode" => $animation->getFillMode(),
+            "animation-timing-function" => $animation->getTimingFunction(),
+            "animation-direction" => $animation->getDirection(),
+            "animation-iteration-count" => $animation->getIteration(),
+        ];
     }
 }
