@@ -1,6 +1,11 @@
 <?php
 
+use src\Animations\Enums\AnimationDirection;
+use src\Animations\Fade;
 use src\Animations\Rotate;
+use src\Animations\RotateDiagonal;
+use src\Animations\Scale;
+use src\Animations\Wiggle;
 use src\Components\Enums\Event;
 use src\Components\Enums\TextAlign;
 use src\Components\Image;
@@ -43,7 +48,10 @@ try {
             ->color('white')
             ->stroke(5, 'green')
             ->attachStartingAnimation(
-                Rotate::make('animation1')->setLength(4)->degree(180)
+                Wiggle::make('animation1')->setLength(4)
+            )
+            ->attachStartingAnimation(
+                Scale::make('animation2')->setLength(1)
             )
             // ->rotate(15)
     );
@@ -54,7 +62,7 @@ try {
     //     startType: Event::END
     // );
 
-   $a->showTime(2);
+   $a->showTime(0.6);
 
 } catch( Throwable $e ) { 
     echo $e->getMessage() . "\n";

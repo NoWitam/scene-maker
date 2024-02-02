@@ -4,18 +4,18 @@ namespace src\Animations;
 
 use src\Animations\Animation;
 
-class Rotate extends Animation
+class RotateDiagonal extends Animation
 {
-    protected float $degree = 0;
+    protected float $degree = 360;
 
     protected function recipe() : array
     {
         return [
             0 => [
-                "rotate" => "0deg"
+                "rotate" => "1 2 1 0deg"
             ],
             100 => [
-                "rotate" => "{$this->degree}deg"
+                "rotate" => "1 2 1 {$this->degree}deg"
             ]
         ];
     }
