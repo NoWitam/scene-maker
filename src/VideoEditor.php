@@ -3,9 +3,12 @@
 namespace src;
 
 use Exception;
+use HeadlessChromium\BrowserFactory;
+use Spatie\Browsershot\Browsershot;
 use src\Animations\Animation;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Component;
+use src\Interfaces\CanHaveTime;
 
 class VideoEditor
 {
@@ -14,6 +17,11 @@ class VideoEditor
     private array $timeline = [];
     private array $components = [];
     private int $frame = 0;
+
+    function __construct(
+        private int $height,
+        private int $width
+    ){}
 
     public function setBackground(string $background)
     {
@@ -175,13 +183,42 @@ class VideoEditor
         return $this->frame / $this->fps;
     }
 
-    public function run()
+    public function run(string $tmp, string $videoName)
     {
-        $this->generateTimeline();
-        foreach($this->generateFrame() as $frame)
-        {
-            echo $frame . "\n";
+        $files = glob($tmp . '*');
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
         }
+
+        $this->generateTimeline();
+
+        $browserFactory = new BrowserFactory("chromium");
+        $browser = $browserFactory->createBrowser([
+            'windowSize'   => [$this->width, $this->height],
+        ]);
+
+        try {
+            $page = $browser->createPage();
+            foreach($this->generateFrame() as $frame)
+            {
+                $frameNumber = str_pad($this->frame, 6, '0', STR_PAD_LEFT);
+
+                $page->setHtml($frame);
+
+                $page->screenshot([
+                    'format'  => 'jpeg',
+                    'quality' => 100,
+                    'optimizeForSpeed' => false 
+                ])->saveToFile("{$tmp}/frame_{$frameNumber}.jpeg");
+            }     
+        } finally {
+            $browser->close();
+        }
+
+
+        exec("ffmpeg -r {$this->fps} -y -i '{$tmp}/frame_%06d.jpeg' '{$videoName}.mp4'");
     }
 
     public function showTime(float $time)
@@ -208,11 +245,23 @@ class VideoEditor
         }
     }
 
+    public function getLength() : float
+    {
+        return max(array_map(
+            function (CanHaveTime $component) {
+                return $component->getEnd();
+            },
+            $this->components
+        ));
+    }
+
     private function generateFrame()
     {
-        while(count($this->timeline))
+        while(true)
         {
-            $html = '<link rel="stylesheet" href="assets/style.css"><body><div id="screen" style="background: ' . $this->background . '">';
+            $renderComponents = [];
+        
+            $html = '<head><link rel="stylesheet" href="http://localhost:3000/assets/style.css"><body><div id="screen" style="background: ' . $this->background . '"></head><body>';
 
             foreach($this->timeline as $time => $components)
             {
@@ -223,18 +272,30 @@ class VideoEditor
                 foreach($components as $i => $component)
                 {
                     if($component->getEnd() <= $this->getTime()) {
-                        unset($components[$i]);
-                        if(count($components) == 0) {
-                            unset($timeline[$time]);
+                        unset($this->timeline[$time][$i]);
+                        if(count($this->timeline[$time]) == 0) {
+                            unset($this->timeline[$time]);
                         }
-                        break;
+                    } else {
+                        $renderComponents[] = $component->getName();
+                        $html .= $component->render($this->getTime());
                     }
-
-                    $html .= $component->render($this->getTime());
                 }
             }
 
-            $html .= "</div></body>";
+            echo 
+                "Frame: ". str_pad($this->frame+1, 6, '0', STR_PAD_LEFT) . 
+                " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
+                " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
+                " | Componentes: " .
+                implode(", ", $renderComponents)
+                . "\n";
+            $html .= "</body>";
+
+            if(count($this->timeline) == 0) {
+                return;
+            }
+
             $this->frame++;
             yield $html;
         }

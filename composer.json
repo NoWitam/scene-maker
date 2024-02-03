@@ -1,0 +1,10 @@
+{
+    "require": {
+        "chrome-php/chrome": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "src\\" : "src/"
+        }
+    }
+}
