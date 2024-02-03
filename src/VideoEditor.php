@@ -4,7 +4,7 @@ namespace src;
 
 use Exception;
 use HeadlessChromium\BrowserFactory;
-use Spatie\Browsershot\Browsershot;
+use InvalidArgumentException;
 use src\Animations\Animation;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Component;
@@ -33,7 +33,7 @@ class VideoEditor
         $this->fps = $fps;
     }
 
-    public function getComponent($componentName) : Component
+    private function getComponent($componentName) : Component
     {
         if(isset($this->components[$componentName])) {
             return $this->components[$componentName];
@@ -161,26 +161,118 @@ class VideoEditor
 
         return $this;
     }
-    
-    private function generateTimeline() 
-    {
-        $this->timeline = [];
-        
-        foreach($this->components as $component)
-        {
-            if(isset($this->timeline[$component->getStart()])) {
-                $this->timeline[$component->getStart()][] = $component;
-            } else {
-                $this->timeline[$component->getStart()] = [$component];
-            }
-        }
 
-        ksort($this->timeline);
+    public function setPositionRelativeToScreen(
+        string $componentName,
+        int|float $componentHorizontalProcent = 0, int|float $componentVerticalProcent = 0,
+        int|float $screenHorizontalProcent = 0, int|float $screenVerticalProcent = 0, 
+        int $horizontalOffset = 0, int $verticalOffset = 0
+    ) : self
+    {
+        return $this->setHorizontalPositionRelativeToScreen(
+            $componentName, $componentHorizontalProcent, $screenHorizontalProcent, $horizontalOffset
+        )->setVerticalPositionRelativeToScreen(
+            $componentName, $componentVerticalProcent, $screenVerticalProcent,  $verticalOffset
+        );
     }
 
+    public function setHorizontalPositionRelativeToScreen(
+        string $componentName, int|float $componentHorizontalProcent = 0, int|float $screenHorizontalProcent = 0, int $horizontalOffset = 0
+    ) : self
+    {
+        if(!Helper::isPercent($screenHorizontalProcent) OR !Helper::isPercent($componentHorizontalProcent)) {
+            throw new InvalidArgumentException("Wartość powinna być liczbą przedstawiającą procent");
+        }
+
+        $component = $this->getComponent($componentName);
+        $component->positionX(
+            ($this->width * $screenHorizontalProcent / 100) - ($component->getWidth() * $componentHorizontalProcent / 100) + $horizontalOffset
+        );
+
+        return $this;
+    }
+
+    public function setVerticalPositionRelativeToScreen(
+        string $componentName, int|float $componentVerticalProcent = 0, int|float $screenVerticalProcent = 0, int $verticalOffset = 0
+    ) : self
+    {
+        if(!Helper::isPercent($screenVerticalProcent) OR !Helper::isPercent($componentVerticalProcent)) {
+            throw new InvalidArgumentException("Wartość powinna być liczbą przedstawiającą procent");
+        }
+
+        $component = $this->getComponent($componentName);
+        $component->positionY(
+            ($this->height * $screenVerticalProcent / 100) - ($component->getHeight() * $componentVerticalProcent / 100) + $verticalOffset
+        );
+        var_dump($component->getPosition());
+        return $this;
+    }
+
+    public function setPositionRelativeToComponent(
+        string $componentName, string $referenceName,
+        int|float $componentHorizontalProcent = 0, int|float $componentVerticalProcent = 0,
+        int|float $refernceHorizontalProcent = 0, int|float $refernceVerticalProcent = 0, 
+        int $horizontalOffset = 0, int $verticalOffset = 0
+    ) : self
+    {
+        return $this->setHorizontalPositionRelativeToComponent(
+            $componentName, $referenceName, $componentHorizontalProcent, $refernceHorizontalProcent, $horizontalOffset
+        )->setVerticalPositionRelativeToComponent(
+            $componentName, $referenceName, $componentVerticalProcent, $refernceVerticalProcent,  $verticalOffset
+        );
+    }
+
+    public function setHorizontalPositionRelativeToComponent(
+        string $componentName, string $referenceName, int|float $componentHorizontalProcent = 0, int|float $refernceHorizontalProcent = 0, int $horizontalOffset = 0
+    ) : self
+    {
+        if(!Helper::isPercent($refernceHorizontalProcent) OR !Helper::isPercent($componentHorizontalProcent)) {
+            throw new InvalidArgumentException("Wartość powinna być liczbą przedstawiającą procent");
+        }
+
+        $component = $this->getComponent($componentName);
+        $reference = $this->getComponent($referenceName);
+        $component->positionX(
+            ($reference->getPosition()['x'] + ($reference->getWidth() * $refernceHorizontalProcent / 100)) 
+            - ($component->getWidth() * $componentHorizontalProcent / 100) 
+            + $horizontalOffset
+        );
+
+        return $this;
+    }
+
+    public function setVerticalPositionRelativeToComponent(
+        string $componentName, string $referenceName, int|float $componentVerticalProcent = 0, int|float $refernceVerticalProcent = 0, int $verticalOffset = 0
+    ) : self
+    {
+        if(!Helper::isPercent($refernceVerticalProcent) OR !Helper::isPercent($componentVerticalProcent)) {
+            throw new InvalidArgumentException("Wartość powinna być liczbą przedstawiającą procent");
+        }
+
+        $component = $this->getComponent($componentName);
+        $reference = $this->getComponent($referenceName);
+        $component->positionY(
+            ($reference->getPosition()['y'] + ($reference->getHeight() * $refernceVerticalProcent / 100)) 
+            - ($component->getHeight() * $componentVerticalProcent / 100) 
+            + $verticalOffset
+        );
+
+        return $this;
+    }
+    
     private function getTime() : float
     {
         return $this->frame / $this->fps;
+    }
+
+    public function getLength() : float
+    {
+        return max(array_map(
+            function (CanHaveTime $component) {
+                return $component->getEnd();
+            },
+            $this->components
+        ));
     }
 
     public function run(string $tmp, string $videoName)
@@ -201,6 +293,7 @@ class VideoEditor
 
         try {
             $page = $browser->createPage();
+
             foreach($this->generateFrame() as $frame)
             {
                 $frameNumber = str_pad($this->frame, 6, '0', STR_PAD_LEFT);
@@ -212,7 +305,8 @@ class VideoEditor
                     'quality' => 100,
                     'optimizeForSpeed' => false 
                 ])->saveToFile("{$tmp}/frame_{$frameNumber}.jpeg");
-            }     
+            }   
+
         } finally {
             $browser->close();
         }
@@ -220,39 +314,20 @@ class VideoEditor
 
         exec("ffmpeg -r {$this->fps} -y -i '{$tmp}/frame_%06d.jpeg' '{$videoName}.mp4'");
     }
-
-    public function showTime(float $time)
+    private function generateTimeline() 
     {
-        $this->generateTimeline();
-        foreach($this->generateFrame() as $frame)
+        $this->timeline = [];
+        
+        foreach($this->components as $component)
         {
-            if($time < $this->getTime()) {
-                echo $frame;
-                break;
+            if(isset($this->timeline[$component->getStart()])) {
+                $this->timeline[$component->getStart()][] = $component;
+            } else {
+                $this->timeline[$component->getStart()] = [$component];
             }
         }
-    }
 
-    public function showFrame(int $frameCount)
-    {
-        $this->generateTimeline();
-        foreach($this->generateFrame() as $frame)
-        {
-            if($this->frame == $frameCount) {
-                echo $frame;
-                break;
-            }
-        }
-    }
-
-    public function getLength() : float
-    {
-        return max(array_map(
-            function (CanHaveTime $component) {
-                return $component->getEnd();
-            },
-            $this->components
-        ));
+        ksort($this->timeline);
     }
 
     private function generateFrame()
@@ -283,13 +358,13 @@ class VideoEditor
                 }
             }
 
-            echo 
-                "Frame: ". str_pad($this->frame+1, 6, '0', STR_PAD_LEFT) . 
-                " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
-                " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
-                " | Componentes: " .
-                implode(", ", $renderComponents)
-                . "\n";
+            // print 
+            //     "Frame: ". str_pad($this->frame+1, 6, '0', STR_PAD_LEFT) . 
+            //     " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
+            //     " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
+            //     " | Componentes: " .
+            //     implode(", ", $renderComponents)
+            //     . "\n";
             $html .= "</body>";
 
             if(count($this->timeline) == 0) {
@@ -298,6 +373,48 @@ class VideoEditor
 
             $this->frame++;
             yield $html;
+        }
+    }
+
+    public function showTime(float $time)
+    {
+        $this->generateTimeline();
+        foreach($this->generateFrame() as $frame)
+        {
+            if($time < $this->getTime()) {
+                echo $frame;
+                break;
+            }
+        }
+    }
+
+    public function showFrame(int $frameCount, string $name)
+    {
+        $this->generateTimeline();
+        foreach($this->generateFrame() as $frame)
+        {
+            if($this->frame == $frameCount) {
+                $browserFactory = new BrowserFactory("chromium");
+                $browser = $browserFactory->createBrowser([
+                    'windowSize'   => [$this->width, $this->height],
+                ]);
+        
+                try {
+                    $page = $browser->createPage();
+
+                    $page->setHtml($frame);
+    
+                    $page->screenshot([
+                        'format'  => 'jpeg',
+                        'quality' => 100,
+                        'optimizeForSpeed' => false 
+                    ])->saveToFile("{$name}.jpeg");
+
+                } finally {
+                    $browser->close();
+                    return;
+                }
+            }
         }
     }
 }

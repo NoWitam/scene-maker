@@ -6,6 +6,7 @@ use Error;
 use src\Animations\Enums\AnimationDirection;
 use src\Animations\Enums\AnimationFillMode;
 use src\Animations\Enums\AnimationTimingFunction;
+use src\Helper;
 use src\HtmlTags\OpenHtmlTag;
 use src\Interfaces\CanHaveTime;
 use src\Traits\HasCallableTraits;
@@ -39,7 +40,7 @@ abstract class Animation implements CanHaveTime
         foreach($this->recipe() as $percents => $effects)
         {
 
-            if(!$this->isProcent($percents)) {
+            if(!Helper::isPercent($percents)) {
                 throw new Error("Animation {$this->name} on component {$parentName} is not valid"); 
             }
 
@@ -123,22 +124,5 @@ abstract class Animation implements CanHaveTime
         $returns = $this->callMethodInTraits('isValid'); 
 
         return !in_array(false, $returns);
-    }
-
-    private function isProcent($value) : bool
-    {
-        if(!is_integer($value)) {
-            return false;
-        }
-
-        if($value < 0) {
-            return false;
-        }
-
-        if($value > 100) {
-            return false;
-        }
-
-        return true;
     }
 }

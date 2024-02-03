@@ -4,7 +4,6 @@ namespace src\Components;
 
 use Exception;
 use src\Animations\Animation;
-use src\Animations\Rotate;
 use src\Components\Enums\ComponentEvent;
 use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;
@@ -16,8 +15,8 @@ use src\Traits\HasTime;
 abstract class Component implements CanHaveTime
 {
     use HasTime, HasCallableTraits;
-    protected ?int $width = null;
-    protected ?int $height = null;
+    protected ?int $width = 0;
+    protected ?int $height = 0;
     protected int $x = 0;
     protected int $y = 0;
     protected int $z = 0;
@@ -83,6 +82,16 @@ abstract class Component implements CanHaveTime
         return $this;
     }
 
+    public function getWidth() : int
+    {
+        return $this->width;
+    }
+
+    public function getHeight() : int
+    {
+        return $this->height;
+    }
+
     public function position(int $x, int $y, int $z = 0) : self
     {
         $this->x = $x;
@@ -90,6 +99,36 @@ abstract class Component implements CanHaveTime
         $this->z = $z;
 
         return $this;
+    }
+
+    public function positionX(int $x) : self
+    {
+        $this->x = $x;
+
+        return $this;
+    }
+
+    public function positionY(int $y) : self
+    {
+        $this->y = $y;
+
+        return $this;
+    }
+
+    public function positionZ(int $z) : self
+    {
+        $this->z = $z;
+
+        return $this;
+    }
+
+    public function getPosition() : array
+    {
+        return [
+            "x" => $this->x,
+            "y" => $this->y,
+            "z" => $this->z
+        ];
     }
 
 

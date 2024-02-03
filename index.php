@@ -6,6 +6,7 @@ use src\Components\Enums\ComponentEvent;
 use src\Components\Enums\TextAlign;
 use src\Components\Image;
 use src\Components\Text;
+use src\Helper;
 use src\VideoEditor;
 
 require 'vendor/autoload.php';
@@ -14,12 +15,12 @@ require 'vendor/autoload.php';
 try {
     $heigt = 1920;
     $width = 1080;
-    $a = new VideoEditor(1920, 1080);
+    $a = new VideoEditor($heigt, $width);
     $a->setFps(24);
 
     $a->addChainComponents(0, 
-        Image::make('image1')->setLength(7)->size($heigt, $width)->position(0, 0)->url(asset("img/roman_soliders.jpg")),
-        //Image::make('image2')->setLength(2)->size(800, 450)->position(100, 100)->url(asset("img/roman_soliders.jpg")),
+        Image::make('image1')->setLength(7)->size($heigt, $width)->url(Helper::asset("img/roman_soliders.jpg")),
+        //Image::make('image2')->setLength(2)->size(800, 450)->position(100, 100)->url(Helper::asset("img/roman_soliders.jpg")),
     );
 
     $a->addComponentParallel(
@@ -29,29 +30,40 @@ try {
             ->align(TextAlign::CENTER)
             ->color('white')
             ->stroke(5, 'green')
-            ->attachStartingAnimation(
-                Wiggle::make('animation1')->setLength(4)->setDelay(2)
-            )
-            ->attachStartingAnimation(
-                Scale::make('animation2')->setLength(6)
-            )
-            ->rotate(15),
-        'image1'
+            // ->attachStartingAnimation(
+            //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
+            // )
+            // ->attachStartingAnimation(
+            //     Scale::make('animation2')->setLength(6)
+            // )
+            // ->rotate(15)
+        ,'image1'
+    );
+
+    $a->setPositionRelativeToScreen(
+        'image1',
+        screenVerticalProcent: 50
+    );
+
+    $a->setPositionRelativeToComponent(
+        'text1',
+        'image1',
+        componentHorizontalProcent: 50,
+        refernceHorizontalProcent: 50,
+        verticalOffset: 20
     );
 
     // $a->addComponentRelative(
-    //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(200, 112)->url(asset("img/roman_soliders.jpg")),
+    //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(200, 112)->url(Helper::asset("img/roman_soliders.jpg")),
     //     componentStartName: 'image1',
     //     startEvent: ComponentEvent::END
     // );
 
     $startTime = microtime(true);
-
-    echo sprintf('%s.%03d', date('H:i:s'), floor(microtime(true) * 1000) % 1000) . "\n";
-    //echo $a->showFrame(1);
-    $a->run(__DIR__ . "/tmp/", "output/wideo");
+ 
+    $a->showFrame(1, __DIR__ . "/output/test");
+    //$a->run(__DIR__ . "/tmp/", "output/wideo");
     //$a->showTime(3);
-    echo sprintf('%s.%03d', date('H:i:s'), floor(microtime(true) * 1000) % 1000) . "\n";
 
     $executionTime = microtime(true) - $startTime;
     echo "Trwało to {$executionTime} sekund \n";
@@ -59,10 +71,4 @@ try {
 } catch( Throwable $e ) { 
     echo $e->getMessage() . "\n";
     echo $e->getFile() . " " . $e->getLine();
-}
-
-
-function asset(string $path) : string
-{
-    return "http://localhost:3000/assets/" . $path;
 }
