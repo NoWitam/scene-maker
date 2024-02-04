@@ -3,28 +3,39 @@
 use src\Animations\Scale;
 use src\Animations\Wiggle;
 use src\Components\Enums\ComponentEvent;
+use src\Components\Enums\PlayerState;
 use src\Components\Enums\TextAlign;
 use src\Components\Image;
 use src\Components\Text;
+use src\Components\Video;
 use src\Helper;
+use src\HtmlTags\CloseHtmlTag;
+use src\HtmlTags\OpenHtmlTag;
 use src\VideoEditor;
 
 require 'vendor/autoload.php';
 
-//echo realpath("assets/img/roman_soliders.jpg");
 try {
+
     $heigt = 1920;
     $width = 1080;
     $a = new VideoEditor($heigt, $width);
     $a->setFps(24);
 
     $a->addChainComponents(0, 
-        Image::make('image1')->setLength(7)->size($heigt, $width)->url(Helper::asset("img/roman_soliders.jpg")),
-        //Image::make('image2')->setLength(2)->size(800, 450)->position(100, 100)->url(Helper::asset("img/roman_soliders.jpg")),
+        Image::make('image1')->setLength(1)->size($heigt, $width)->url(__DIR__ . "/assets/img/roman_soliders.jpg"),
+    );
+
+    $a->addComponent(
+        Video::make("video")->setStart(0)->size($heigt/2, $width)->url(__DIR__ . "/assets/video/wiedzmin.mp4")
+        ->speed(1)
+        ->playerState(PlayerState::REPEAT)
+        ->rotate(15)
+        ->setLength(4)
     );
 
     $a->addComponentParallel(
-        Text::make('text1')->setStart(0)->setLength(7)->size(400, 225)->position(100, 100, 1)
+        Text::make('text1')->size(400, 225)->position(100, 100, 1)
             ->text("Witamy w naszej bajce")
             ->fontSize(40)
             ->align(TextAlign::CENTER)
@@ -54,19 +65,17 @@ try {
     );
 
     // $a->addComponentRelative(
-    //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(200, 112)->url(Helper::asset("img/roman_soliders.jpg")),
+    //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(200, 112)->url(__DIR__ . "/assets/img/roman_soliders.jpg")),
     //     componentStartName: 'image1',
     //     startEvent: ComponentEvent::END
     // );
 
-    $startTime = microtime(true);
+    
+    $tmp = __DIR__ . "/tmp/";
  
-    $a->showFrame(1, __DIR__ . "/output/test");
-    //$a->run(__DIR__ . "/tmp/", "output/wideo");
+    //$a->showFrame(1, $tmp, __DIR__ . "/output/test");
+    $a->generate($tmp, __DIR__ . "/output/test");
     //$a->showTime(3);
-
-    $executionTime = microtime(true) - $startTime;
-    echo "Trwało to {$executionTime} sekund \n";
 
 } catch( Throwable $e ) { 
     echo $e->getMessage() . "\n";

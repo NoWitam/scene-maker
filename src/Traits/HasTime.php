@@ -52,12 +52,12 @@ trait HasTime
         return $this;
     }
 
-    public function getEnd() : float
+    public function getEnd() : ?float
     {
         return $this->end;
     }
 
-    public function getStart() : float
+    public function getStart() : ?float
     {
         return $this->start;
     }

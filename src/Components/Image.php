@@ -3,6 +3,7 @@
 namespace src\Components;
 
 use src\Components\Traits\HasRotate;
+use src\Helper;
 use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;
 
@@ -17,16 +18,25 @@ class Image extends Component
         return CloseHtmlTag::make(
             tag: 'img',
             attributes: $this->mergeAttributes(
-                ["src" => $this->url
+                ["src" => Helper::getImageSrc($this->url)
             ]),
             styles: $this->mergeStyles([])
         );
     }
 
-    public function url($url) : self
+    public function url(string $url) : self
     {
         $this->url = $url;
 
         return $this;
+    }
+
+    public function isValid() : bool
+    {
+        if(is_null($this->url)){
+            return false;
+        }
+
+        return parent::isValid();
     }
 }

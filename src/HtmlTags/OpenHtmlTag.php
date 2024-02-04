@@ -12,7 +12,7 @@ class OpenHtmlTag extends HtmlTag
         protected string $content = ""
     ) {}
 
-    public function render() : string
+    public function render(?float $time) : string
     {
         $classes = implode(" ", $this->classes);
 
