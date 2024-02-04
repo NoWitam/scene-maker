@@ -4,7 +4,7 @@ namespace src\HtmlTags;
 
 class CloseHtmlTag extends HtmlTag
 {
-    public function render() : string
+    public function render(?float $time) : string
     {
         $classes = implode(" ", $this->classes);
 

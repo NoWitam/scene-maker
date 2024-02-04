@@ -9,10 +9,11 @@ use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;
 use src\Interfaces\CanHaveTime;
+use src\Interfaces\Renderable;
 use src\Traits\HasCallableTraits;
 use src\Traits\HasTime;
 
-abstract class Component implements CanHaveTime
+abstract class Component implements CanHaveTime, Renderable
 {
     use HasTime, HasCallableTraits;
     protected ?int $width = 0;
@@ -31,7 +32,7 @@ abstract class Component implements CanHaveTime
         return new static($name);  
     }
 
-    public function render(float $time): string
+    public function render(?float $time): string
     {
         $animations = count($this->animations) == 0 ? "" : 
         OpenHtmlTag::make(

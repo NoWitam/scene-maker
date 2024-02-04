@@ -12,9 +12,9 @@ interface CanHaveTime
 
     public function setEnd(float $end) : self;
 
-    public function getEnd() : float;
+    public function getEnd() : ?float;
 
-    public function getStart() : float;
+    public function getStart() : ?float;
 
     public function isValidHasTime() : bool;
 

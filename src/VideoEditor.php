@@ -9,6 +9,7 @@ use src\Animations\Animation;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Component;
 use src\Interfaces\CanHaveTime;
+use src\Interfaces\Prepareable;
 
 class VideoEditor
 {
@@ -204,7 +205,7 @@ class VideoEditor
         $component->positionY(
             ($this->height * $screenVerticalProcent / 100) - ($component->getHeight() * $componentVerticalProcent / 100) + $verticalOffset
         );
-        var_dump($component->getPosition());
+
         return $this;
     }
 
@@ -275,16 +276,19 @@ class VideoEditor
         ));
     }
 
-    public function run(string $tmp, string $videoName)
+    public function generate(string $tmp, string $videoName)
     {
-        $files = glob($tmp . '*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
+        $startTime = microtime(true);
+
+        Helper::rmdirr($tmp);
+        mkdir($tmp);
+      
+        $directory = getcwd();
+        chdir($tmp);
 
         $this->generateTimeline();
+
+        $this->prepareComponents();
 
         $browserFactory = new BrowserFactory("chromium");
         $browser = $browserFactory->createBrowser([
@@ -294,7 +298,7 @@ class VideoEditor
         try {
             $page = $browser->createPage();
 
-            foreach($this->generateFrame() as $frame)
+            foreach($this->generateFrames($tmp) as $frame)
             {
                 $frameNumber = str_pad($this->frame, 6, '0', STR_PAD_LEFT);
 
@@ -312,7 +316,12 @@ class VideoEditor
         }
 
 
-        exec("ffmpeg -r {$this->fps} -y -i '{$tmp}/frame_%06d.jpeg' '{$videoName}.mp4'");
+        exec("ffmpeg -r {$this->fps} -y -i 'frame_%06d.jpeg' '{$videoName}.mp4' 2>&1");
+
+        chdir($directory);
+
+        $executionTime = microtime(true) - $startTime;
+        echo "Trwało to {$executionTime} sekund \n";
     }
     private function generateTimeline() 
     {
@@ -330,10 +339,16 @@ class VideoEditor
         ksort($this->timeline);
     }
 
-    private function generateFrame()
+    private function generateFrames(string $tmp)
     {
+        $runTimes = [];
+
         while(true)
         {
+            $this->frame++;
+
+            $startTime = microtime(true);
+
             $renderComponents = [];
         
             $html = '<head><link rel="stylesheet" href="http://localhost:3000/assets/style.css"><body><div id="screen" style="background: ' . $this->background . '"></head><body>';
@@ -346,7 +361,7 @@ class VideoEditor
 
                 foreach($components as $i => $component)
                 {
-                    if($component->getEnd() <= $this->getTime()) {
+                    if($component->getEnd() < $this->getTime()) {
                         unset($this->timeline[$time][$i]);
                         if(count($this->timeline[$time]) == 0) {
                             unset($this->timeline[$time]);
@@ -358,40 +373,45 @@ class VideoEditor
                 }
             }
 
-            // print 
-            //     "Frame: ". str_pad($this->frame+1, 6, '0', STR_PAD_LEFT) . 
-            //     " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
-            //     " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
-            //     " | Componentes: " .
-            //     implode(", ", $renderComponents)
-            //     . "\n";
             $html .= "</body>";
 
             if(count($this->timeline) == 0) {
+                print 
+                    "Runtime - " .
+                    "min: " . number_format(min($runTimes), 5, '.', '') . "s" . 
+                    "| max: " . number_format(max($runTimes), 5, '.', '') . "s" .
+                    "| average: " . number_format(array_sum($runTimes) / count($runTimes), 5, '.', '') . "s"
+                    . "\n";
+
                 return;
             }
 
-            $this->frame++;
+            $runTime = microtime(true) - $startTime;
+            $runTimes[$this->frame] = $runTime;
+
+            print 
+                "Frame: ". str_pad($this->frame, 6, '0', STR_PAD_LEFT) . 
+                " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
+                " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
+                " | RunTime: " . number_format($runTime, 5, '.', ''). "s " .
+                " | Componentes: " .
+                implode(", ", $renderComponents)
+                . "\n";
+
             yield $html;
         }
     }
 
-    public function showTime(float $time)
+    public function showFrame(int $frameCount, string $tmp, string $frameName)
     {
-        $this->generateTimeline();
-        foreach($this->generateFrame() as $frame)
-        {
-            if($time < $this->getTime()) {
-                echo $frame;
-                break;
-            }
-        }
-    }
+        $directory = getcwd();
+        chdir($tmp);
 
-    public function showFrame(int $frameCount, string $name)
-    {
         $this->generateTimeline();
-        foreach($this->generateFrame() as $frame)
+
+        $this->prepareComponents();
+
+        foreach($this->generateFrames($tmp) as $frame)
         {
             if($this->frame == $frameCount) {
                 $browserFactory = new BrowserFactory("chromium");
@@ -408,7 +428,7 @@ class VideoEditor
                         'format'  => 'jpeg',
                         'quality' => 100,
                         'optimizeForSpeed' => false 
-                    ])->saveToFile("{$name}.jpeg");
+                    ])->saveToFile("{$frameName}.jpeg");
 
                 } finally {
                     $browser->close();
@@ -416,5 +436,23 @@ class VideoEditor
                 }
             }
         }
+
+        chdir($directory);
     }
+
+    private function prepareComponents()
+    {
+        $data = [
+            'fps' => $this->fps,
+            'legnth' => $this->getLength()
+        ];
+
+        foreach($this->components as $component)
+        {
+            if($component instanceof Prepareable){
+                $component->prepare($data);
+            }
+        }
+    }
+
 }
