@@ -9,7 +9,6 @@ use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\EmptyHtmlTag;
 use src\HtmlTags\HtmlTag;
 use src\Interfaces\Prepareable;
-use src\Interfaces\Renderable;
 
 class Video extends Component implements Prepareable
 {
