@@ -32,7 +32,7 @@ abstract class Helper
         return 'data: '. mime_content_type($path) . ';base64,' . $imageData;
     }
 
-    public static function getFileDuration(string $path) : string 
+    public static function getFileDuration(string $path) : float 
     {
         return (float) exec("ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {$path} 2>&1");
     }
