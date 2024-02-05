@@ -3,6 +3,7 @@
 namespace src\Components;
 
 use src\Components\Enums\TextAlign;
+use src\Components\Enums\VerticalAlign;
 use src\Components\Traits\HasRotate;
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;
@@ -13,7 +14,8 @@ class Text extends Component
 
     private ?string $text = null;
     private ?int $fontSize = null;
-    private ?TextAlign $align = null;
+    private TextAlign $align = TextAlign::CENTER;
+    private VerticalAlign $verticalAlign = VerticalAlign::CENTER;
     private ?string $color = null;
     private int $strokeSize = 0;
     private ?string $strokeColor = null;
@@ -27,7 +29,7 @@ class Text extends Component
                 attributes: $this->mergeAttributes([
                     "stroke-text" => $this->text
                 ]),
-                content: $this->text
+                content: $this->text,
             ),
             classes: ["textbox"],
             styles: $this->mergeStyles([
@@ -35,7 +37,8 @@ class Text extends Component
                 'text-align' => $this->align->value,
                 'color' => $this->color,
                 "--stroke-color" => $this->strokeColor,
-                "--stroke-size" => $this->strokeSize . "px"
+                "--stroke-size" => $this->strokeSize . "px",
+                "align-items" => $this->verticalAlign->value
             ])
         );
     }
@@ -57,6 +60,13 @@ class Text extends Component
     public function align(TextAlign $align) : self
     {
         $this->align = $align;
+
+        return $this;
+    }
+
+    public function verticalAlign(VerticalAlign $verticalAlign) : self
+    {
+        $this->verticalAlign = $verticalAlign;
 
         return $this;
     }
