@@ -70,7 +70,7 @@ class Video extends Component implements Prepareable
     public function url(string $url) : self
     {
         $this->url = $url;
-        $this->duration = Helper::getFileDuration($url);// - 0.04;
+        $this->duration = Helper::getFileDuration($url);
  
         return $this;
     }

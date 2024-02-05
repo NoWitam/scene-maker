@@ -10,6 +10,7 @@ use src\Components\Enums\ComponentEvent;
 use src\Components\Component;
 use src\Interfaces\CanHaveTime;
 use src\Interfaces\Prepareable;
+use src\Components\Interfaces\Soundable;
 
 class VideoEditor
 {
@@ -279,6 +280,7 @@ class VideoEditor
     public function generate(string $tmp, string $videoName)
     {
         $startTime = microtime(true);
+        $extension = "mp4";
 
         Helper::rmdirr($tmp);
         mkdir($tmp);
@@ -316,7 +318,9 @@ class VideoEditor
         }
 
 
-        exec("ffmpeg -r {$this->fps} -y -i 'frame_%06d.jpeg' '{$videoName}.mp4' 2>&1");
+        exec("ffmpeg -r {$this->fps} -y -i 'frame_%06d.jpeg' video.{$extension} 2>&1");
+
+        $this->addSounds("video.{$extension}", $videoName . ".{$extension}");
 
         chdir($directory);
 
@@ -337,6 +341,37 @@ class VideoEditor
         }
 
         ksort($this->timeline);
+    }
+
+    private function addSounds(string $videoWithoutMusicName, string $videoName)
+    {
+        $sounds = [];
+        foreach($this->components as $component)
+        {
+            if($component instanceof Soundable) {
+                $sounds = array_merge($sounds, $component->declareSound());
+            }
+        }
+
+        $soundCount = count($sounds);
+
+        $commands = array_map(
+            function ($sound, $i) {
+                return $sound->command($i);
+            },
+            $sounds,
+            range(1, $soundCount)
+        );
+
+        $names = array_column($commands, "name");
+        $paths = array_column($commands, "path");
+        $filters = array_column($commands, "filter");
+
+        $command = "ffmpeg -y -i {$videoWithoutMusicName} " . implode(" ", $paths) . " " .
+            "-filter_complex \"" . implode(";", $filters) . ";" . implode("", $names) . "amix={$soundCount}[a]" . "\"" .
+            " -map 0:v -map \"[a]\" -preset ultrafast {$videoName}";
+
+        exec($command . " 2>&1");
     }
 
     private function generateFrames(string $tmp)
