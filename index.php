@@ -6,6 +6,7 @@ use src\Components\Audio;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Enums\PlayerState;
 use src\Components\Enums\TextAlign;
+use src\Components\Enums\VerticalAlign;
 use src\Components\Image;
 use src\Components\Text;
 use src\Components\Video;
@@ -42,12 +43,12 @@ try {
     //     Audio::make('sound2')->setStart(1)->path(__DIR__ . "/assets/audio/wiedzmin.mp3")->speed(1)
     // );
 
-    $a->addComponent(
-        Video::make("video")->setStart(0)->size($heigt/2, $width)->url(__DIR__ . "/assets/video/wiedzmin.mp4")
-        ->speed(1.5)
-        ->playerState(PlayerState::REVERSE_REPEAT)
-        ->setLength(4)
-    );
+    // $a->addComponent(
+    //     Video::make("video")->setStart(0)->size($heigt/2, $width)->url(__DIR__ . "/assets/video/wiedzmin.mp4")
+    //     ->speed(1.5)
+    //     ->playerState(PlayerState::REVERSE_REPEAT)
+    //     ->setLength(4)
+    // );
 
     // $a->addComponent(
     //     Audio::make('sound1')->setStart(1)->path(__DIR__ . "/assets/audio/wiedzmin.mp3")->speed(-1)
@@ -64,6 +65,7 @@ try {
             ->align(TextAlign::CENTER)
             ->color('#ab2e7a')
             ->stroke(15, '#e9d5ea')
+            ->verticalAlign(VerticalAlign::BOT)
             // ->attachStartingAnimation(
             //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
             // )
