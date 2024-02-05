@@ -2,6 +2,7 @@
 
 use src\Animations\Scale;
 use src\Animations\Wiggle;
+use src\Components\Audio;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Enums\PlayerState;
 use src\Components\Enums\TextAlign;
@@ -23,32 +24,7 @@ try {
     $a->setFps(24);
 
     $a->addChainComponents(0, 
-        Image::make('image1')->setLength(1)->size($heigt, $width)->url(__DIR__ . "/assets/img/roman_soliders.jpg"),
-    );
-
-    $a->addComponent(
-        Video::make("video")->setStart(0)->size($heigt/2, $width)->url(__DIR__ . "/assets/video/wiedzmin.mp4")
-        ->speed(1)
-        ->playerState(PlayerState::REPEAT)
-        ->rotate(15)
-        ->setLength(4)
-    );
-
-    $a->addComponentParallel(
-        Text::make('text1')->size(400, 225)->position(100, 100, 1)
-            ->text("Witamy w naszej bajce")
-            ->fontSize(40)
-            ->align(TextAlign::CENTER)
-            ->color('white')
-            ->stroke(5, 'green')
-            // ->attachStartingAnimation(
-            //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
-            // )
-            // ->attachStartingAnimation(
-            //     Scale::make('animation2')->setLength(6)
-            // )
-            // ->rotate(15)
-        ,'image1'
+        Image::make('image1')->setLength(3.3)->size($heigt, $width)->url(__DIR__ . "/assets/img/roman_soliders.jpg"),
     );
 
     $a->setPositionRelativeToScreen(
@@ -56,13 +32,47 @@ try {
         screenVerticalProcent: 50
     );
 
-    $a->setPositionRelativeToComponent(
-        'text1',
-        'image1',
-        componentHorizontalProcent: 50,
-        refernceHorizontalProcent: 50,
-        verticalOffset: 20
+    $a->addComponent(
+        Audio::make('sound1')->setStart(1)->path(__DIR__ . "/assets/audio/wiedzmin.mp3")->speed(-1)
     );
+
+    $a->addComponent(
+        Audio::make('sound2')->setStart(1)->path(__DIR__ . "/assets/audio/wiedzmin.mp3")->speed(1)
+    );
+
+    // $a->addComponent(
+    //     Video::make("video")->setStart(0)->size($heigt/2, $width)->url(__DIR__ . "/assets/video/wiedzmin.mp4")
+    //     ->speed(1)
+    //     ->playerState(PlayerState::REPEAT)
+    //     ->rotate(15)
+    //     ->setLength(4)
+    // );
+
+    // $a->addComponentParallel(
+    //     Text::make('text1')->size(400, 225)->position(100, 100, 1)
+    //         ->text("Witamy w naszej bajce")
+    //         ->fontSize(40)
+    //         ->align(TextAlign::CENTER)
+    //         ->color('white')
+    //         ->stroke(5, 'green')
+    //         // ->attachStartingAnimation(
+    //         //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
+    //         // )
+    //         // ->attachStartingAnimation(
+    //         //     Scale::make('animation2')->setLength(6)
+    //         // )
+    //         // ->rotate(15)
+    //     ,'image1'
+    // );
+
+
+    // $a->setPositionRelativeToComponent(
+    //     'text1',
+    //     'image1',
+    //     componentHorizontalProcent: 50,
+    //     refernceHorizontalProcent: 50,
+    //     verticalOffset: 20
+    // );
 
     // $a->addComponentRelative(
     //     Image::make('imageStart')->setLength(2)->setDelay(1)->position(200, 200)->size(200, 112)->url(__DIR__ . "/assets/img/roman_soliders.jpg")),
