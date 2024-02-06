@@ -35,6 +35,7 @@ abstract class Component implements CanHaveTime
     public function render(?float $time): HtmlTag
     {
         $tag = $this->isBlock ? "div" : "span";
+
         $animations = count($this->animations) == 0 ? "" : 
         OpenHtmlTag::make(
             tag: $tag,
@@ -70,7 +71,10 @@ abstract class Component implements CanHaveTime
                 'left' => $this->x . "px",
                 'z-index' => $this->z
             ],
-            content: $animations . $animationsOpenLayer . $this->tag($time) . $aniamtionCloseLayer
+            content: $this->tagContainer(
+                time: $time, 
+                content: $animations . $animationsOpenLayer . $this->tag($time) . $aniamtionCloseLayer
+            )
         );
     }
 
@@ -83,6 +87,12 @@ abstract class Component implements CanHaveTime
 
         return $this;
     }
+
+    public function tagContainer(float $time, string $content) : HtmlTag|string
+    {
+        return $content;
+    }
+
     public function getWidth() : int
     {
         return $this->width;
