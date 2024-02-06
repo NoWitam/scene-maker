@@ -36,4 +36,9 @@ class OpenHtmlTag extends HtmlTag
         > {$this->content} </{$this->tag}>";
     }
 
+    public function setContent(string $content)
+    {
+        $this->content = $content;
+    }
+
 }

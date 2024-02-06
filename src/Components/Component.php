@@ -9,11 +9,10 @@ use src\HtmlTags\CloseHtmlTag;
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;
 use src\Interfaces\CanHaveTime;
-use src\Interfaces\Renderable;
 use src\Traits\HasCallableTraits;
 use src\Traits\HasTime;
 
-abstract class Component implements CanHaveTime, Renderable
+abstract class Component implements CanHaveTime
 {
     use HasTime, HasCallableTraits;
     protected ?int $width = 0;
@@ -21,6 +20,7 @@ abstract class Component implements CanHaveTime, Renderable
     protected int $x = 0;
     protected int $y = 0;
     protected int $z = 0;
+    protected bool $isBlock = true;
     protected $animations = [];
 
     function __construct(
@@ -32,11 +32,12 @@ abstract class Component implements CanHaveTime, Renderable
         return new static($name);  
     }
 
-    public function render(?float $time): string
+    public function render(?float $time): HtmlTag
     {
+        $tag = $this->isBlock ? "div" : "span";
         $animations = count($this->animations) == 0 ? "" : 
         OpenHtmlTag::make(
-            tag: 'div',
+            tag: $tag,
             classes: ['animations'],
             content: implode("\n", array_map(
                 function ($animation) { 
@@ -51,11 +52,11 @@ abstract class Component implements CanHaveTime, Renderable
         foreach($this->animations as $animation)
         {
             $animationsOpenLayer .= CloseHtmlTag::make(
-                tag: 'div',
+                tag: $tag,
                 classes: ['animation'],
                 styles: $this->animationStyle($animation, $time)
             );
-            $aniamtionCloseLayer = "</div>";
+            $aniamtionCloseLayer = "</{$tag}>";
         }
 
         return OpenHtmlTag::make(
@@ -82,7 +83,6 @@ abstract class Component implements CanHaveTime, Renderable
 
         return $this;
     }
-
     public function getWidth() : int
     {
         return $this->width;

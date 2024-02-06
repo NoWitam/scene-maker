@@ -355,23 +355,27 @@ class VideoEditor
 
         $soundCount = count($sounds);
 
-        $commands = array_map(
-            function ($sound, $i) {
-                return $sound->command($i);
-            },
-            $sounds,
-            range(1, $soundCount)
-        );
-
-        $names = array_column($commands, "name");
-        $paths = array_column($commands, "path");
-        $filters = array_column($commands, "filter");
-
-        $command = "ffmpeg -y -i {$videoWithoutMusicName} " . implode(" ", $paths) . " " .
-            "-filter_complex \"" . implode(";", $filters) . ";" . implode("", $names) . "amix={$soundCount}[a]" . "\"" .
-            " -map 0:v -map \"[a]\" -preset ultrafast {$videoName}";
-
-        exec($command . " 2>&1");
+        if($soundCount) {
+            $commands = array_map(
+                function ($sound, $i) {
+                    return $sound->command($i);
+                },
+                $sounds,
+                range(1, $soundCount)
+            );
+    
+            $names = array_column($commands, "name");
+            $paths = array_column($commands, "path");
+            $filters = array_column($commands, "filter");
+    
+            $command = "ffmpeg -y -i {$videoWithoutMusicName} " . implode(" ", $paths) . " " .
+                "-filter_complex \"" . implode(";", $filters) . ";" . implode("", $names) . "amix={$soundCount}[a]" . "\"" .
+                " -map 0:v -map \"[a]\" -preset ultrafast {$videoName}";
+    
+            exec($command . " 2>&1");
+        } else {
+            rename($videoWithoutMusicName, $videoName);
+        }
     }
 
     private function generateFrames(string $tmp)
@@ -467,6 +471,9 @@ class VideoEditor
 
                 } finally {
                     $browser->close();
+                    $myfile = fopen("{$frameName}.html", "w");
+                    fwrite($myfile, $frame);
+                    fclose($myfile);
                     return;
                 }
             }
@@ -474,7 +481,6 @@ class VideoEditor
 
         chdir($directory);
     }
-
     private function prepareComponents()
     {
         $data = [
