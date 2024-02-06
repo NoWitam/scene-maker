@@ -1,8 +1,10 @@
 <?php
 
 use src\Animations\Scale;
+use src\Animations\Shake;
 use src\Animations\Wiggle;
 use src\Components\Audio;
+use src\Components\DecoratedText;
 use src\Components\Enums\ComponentEvent;
 use src\Components\Enums\PlayerState;
 use src\Components\Enums\TextAlign;
@@ -59,13 +61,49 @@ try {
     // )
 
     $a->addComponentParallel(
-        Text::make('text1')->size($heigt/2, $width)->position(100, 100, 1)
+        DecoratedText::make('text1')->size($heigt/2, $width)->position(100, 100, 1)
             ->text("Witamy w naszej bajce RAIZHELL - PULL THE TRIGGER (PHONK)")
-            ->fontSize(64)
+            ->setDelay(1)
+            ->fontSize(84)
+            ->align(TextAlign::CENTER)
+            ->color('#ab2e7a')
+            ->stroke(15, '#e9d5ea')
+            ->verticalAlign(VerticalAlign::TOP)
+            // ->pushDecoratedStyle(3, [
+            //     "transform" => "rotate(30deg)"
+            // ])
+            //->pushDecoratedAnimation(3, Scale::make('anim_scale')->setStart(0)->setLength(1))
+            ->pushDecoratedAnimation(3, Shake::make('anim_shake')->setStart(0)->setLength(2)->strength(2))
+            ->pushDecoratedAnimation(3, Wiggle::make('anim_wiggle')->setDelay(1)->setLength(2)->strength(2), ComponentEvent::START)
+            // ->attachStartingAnimation(
+            //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
+            // )
+            // ->attachStartingAnimation(
+            //     Scale::make('animation2')->setLength(6)
+            // )
+            //  ->rotate(15)
+        ,'image1'
+    );
+
+
+    $a->setPositionRelativeToComponent(
+        'text1',
+        'image1',
+        componentHorizontalProcent: 50,
+        refernceHorizontalProcent: 50,
+        componentVerticalProcent: 50,
+        refernceVerticalProcent: 50
+    );
+
+    $a->addComponentParallel(
+        Text::make('text2')->size($heigt/2, $width)->position(100, 100, 1)
+            ->text("Witamy w naszej bajce RAIZHELL - PULL THE TRIGGER (PHONK)")
+            ->fontSize(84)
             ->align(TextAlign::CENTER)
             ->color('#ab2e7a')
             ->stroke(15, '#e9d5ea')
             ->verticalAlign(VerticalAlign::BOT)
+            ->attachAnimation(Scale::make('anim_scale')->setStart(0)->setLength(1))
             // ->attachStartingAnimation(
             //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
             // )
@@ -76,9 +114,8 @@ try {
         ,'image1'
     );
 
-
     $a->setPositionRelativeToComponent(
-        'text1',
+        'text2',
         'image1',
         componentHorizontalProcent: 50,
         refernceHorizontalProcent: 50,
@@ -95,7 +132,7 @@ try {
     
     $tmp = __DIR__ . "/tmp/";
  
-    //$a->showFrame(1, $tmp, __DIR__ . "/output/test");
+   // $a->showFrame(1, $tmp, __DIR__ . "/output/test");
     $a->generate($tmp, __DIR__ . "/output/test_2");
     //$a->showTime(3);
 

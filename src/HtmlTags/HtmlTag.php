@@ -1,9 +1,8 @@
 <?php
 
 namespace src\HtmlTags;
-use src\Interfaces\Renderable;
 
-abstract class HtmlTag implements Renderable
+abstract class HtmlTag
 {
     function __construct(
         protected string $tag,
@@ -39,6 +38,36 @@ abstract class HtmlTag implements Renderable
         
         return $this;
     }
+
+    public function setTag(string $tag) : self
+    {
+        $this->tag = $tag;
+
+        return $this;
+    }
+
+    public function setClasses(array $classes) : self
+    {
+        $this->classes = $classes;
+
+        return $this;
+    }
+
+    public function setAttributes(array $attributes) : self
+    {
+        $this->attributes = $attributes;
+        
+        return $this;
+    }
+
+    public function setStyles(array $styles) : self
+    {
+        $this->styles = $styles;
+        
+        return $this;
+    }
+
+
 
     function __toString() : string 
     {

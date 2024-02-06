@@ -5,20 +5,19 @@ namespace src\Components;
 use src\Components\Enums\TextAlign;
 use src\Components\Enums\VerticalAlign;
 use src\Components\Traits\HasRotate;
+use src\Components\Traits\HasStrokeText;
 use src\HtmlTags\HtmlTag;
 use src\HtmlTags\OpenHtmlTag;
 
 class Text extends Component
 {
-    use HasRotate;
+    use HasRotate, HasStrokeText;
 
-    private ?string $text = null;
-    private ?int $fontSize = null;
-    private TextAlign $align = TextAlign::CENTER;
-    private VerticalAlign $verticalAlign = VerticalAlign::CENTER;
-    private ?string $color = null;
-    private int $strokeSize = 0;
-    private ?string $strokeColor = null;
+    protected ?string $text = null;
+    protected ?int $fontSize = null;
+    protected TextAlign $align = TextAlign::CENTER;
+    protected VerticalAlign $verticalAlign = VerticalAlign::CENTER;
+    protected ?string $color = null;
 
     public function tag(float $time) : HtmlTag
     {
@@ -26,9 +25,7 @@ class Text extends Component
             tag: 'div',
             content: OpenHtmlTag::make(
                 tag: 'p',
-                attributes: $this->mergeAttributes([
-                    "stroke-text" => $this->text
-                ]),
+                attributes: $this->mergeAttributes([]),
                 content: $this->text,
             ),
             classes: ["textbox"],
@@ -36,8 +33,6 @@ class Text extends Component
                 'font-size' => $this->fontSize . "px",
                 'text-align' => $this->align->value,
                 'color' => $this->color,
-                "--stroke-color" => $this->strokeColor,
-                "--stroke-size" => $this->strokeSize . "px",
                 "align-items" => $this->verticalAlign->value
             ])
         );
@@ -45,7 +40,7 @@ class Text extends Component
 
     public function text($text) : self
     {
-        $this->text = $text;
+        $this->text = trim($text);
 
         return $this;
     }
@@ -74,14 +69,6 @@ class Text extends Component
     public function color(string $color) : self 
     {
         $this->color = $color;
-
-        return $this;
-    }
-
-    public function stroke(int $size, string $color) : self
-    {
-        $this->strokeSize = $size;
-        $this->strokeColor = $color;
 
         return $this;
     }
