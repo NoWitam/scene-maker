@@ -59,16 +59,21 @@ class DecoratedText extends Text implements Prepareable
     public function tag(float $time) : HtmlTag
     {
         return OpenHtmlTag::make(
+            tag: 'p',
+            content: implode(" ", array_map(
+                function(SubText $subText) use ($time) {
+                    return $subText->stroke($this->strokeSize, $this->strokeColor)->render($time);
+                },
+                $this->subTexts
+            ))
+        );
+    }
+
+    public function tagContainer(float $time, string $content) : HtmlTag|string
+    {
+        return OpenHtmlTag::make(
             tag: 'div',
-            content: OpenHtmlTag::make(
-                tag: 'p',
-                content: implode(" ", array_map(
-                    function(SubText $subText) use ($time) {
-                        return $subText->stroke($this->strokeSize, $this->strokeColor)->render($time);
-                    },
-                    $this->subTexts
-                )),
-            ),
+            content: $content,
             classes: ["textbox"],
             styles: $this->mergeStyles([
                 'font-size' => $this->fontSize . "px",

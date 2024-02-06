@@ -107,7 +107,7 @@ abstract class Animation implements CanHaveTime
         return $this->direction->value;
     }
 
-    public function interation(?int $iteration) : self
+    public function iteration(?int $iteration) : self
     {
         $this->iteration = $iteration;
 

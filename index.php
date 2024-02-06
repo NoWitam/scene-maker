@@ -30,6 +30,7 @@ try {
 
     $a->addComponent(
         Image::make('image1')->setStart(0)->setLength(4)->size($heigt/2, $width)->url(__DIR__ . "/assets/img/roman_soliders.jpg")
+        ->attachAnimation(Wiggle::make('anim_scale')->setStart(0)->setLength(1)->iteration(null))
     );
 
     $a->setPositionRelativeToScreen(
@@ -132,7 +133,7 @@ try {
     
     $tmp = __DIR__ . "/tmp/";
  
-   // $a->showFrame(1, $tmp, __DIR__ . "/output/test");
+    //$a->showFrame(1, $tmp, __DIR__ . "/output/test");
     $a->generate($tmp, __DIR__ . "/output/test_2");
     //$a->showTime(3);
 

@@ -22,12 +22,17 @@ class Text extends Component
     public function tag(float $time) : HtmlTag
     {
         return OpenHtmlTag::make(
+            tag: 'p',
+            attributes: $this->mergeAttributes([]),
+            content: $this->text,
+        );
+    }
+
+    public function tagContainer(float $time, string $content) : HtmlTag|string
+    {
+        return OpenHtmlTag::make(
             tag: 'div',
-            content: OpenHtmlTag::make(
-                tag: 'p',
-                attributes: $this->mergeAttributes([]),
-                content: $this->text,
-            ),
+            content: $content,
             classes: ["textbox"],
             styles: $this->mergeStyles([
                 'font-size' => $this->fontSize . "px",
