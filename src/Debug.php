@@ -4,59 +4,32 @@ namespace src;
 
 abstract class Debug
 {
-    private static ?int $time = null;  
-    private static array $storage = [];
-    private static array $calculator = [];
+    private static array $cache = [];
 
-    public static function startTimer() : void
+    public static function clear(): void
     {
-        self::$time = microtime(true);
+        self::$cache = [];
     }
 
-    public static function print(callable $callback) : void
+    public static function push(array $data): void
     {
-        if(is_null(self::$time)) {
-            print $callback(microtime(true));
-            return;
-        }
-
-        print $callback(self::$time);
-        self::$time = null;
+        self::$cache[] = $data;
     }
 
-    public static function pasteToStorage(callable $callback) : void
+    public static function merge(array $data): void
     {
-        self::$storage[0] = $callback;
+        $index = count(self::$cache) -1;
+        self::$cache[$index] = array_merge(self::$cache[$index], $data);
     }
 
-    public static function printFromStorage() : void
+    public static function get() : array
     {
-        if(is_null(self::$time)) {
-            print self::$storage[0](0);
-            return;
-        }
-
-        print self::$storage[0](microtime(true) - self::$time);
-        self::$time = null;
+        return self::$cache[count(self::$cache) -1];
     }
 
-    public static function pushToCalcultor($value) : void
+    public static function getAll() : array
     {
-        self::$calculator[] = $value;
+        return self::$cache;
     }
 
-    public static function calculate() : array
-    {
-        return [
-            "avg" => array_sum(self::$calculator) / count(self::$calculator),
-            "min" => min(self::$calculator),
-            "max" => max(self::$calculator),
-            "total" => array_sum(self::$calculator)
-        ];
-    }
-
-    public static function clearCalcultor() : void
-    {
-        self::$calculator = [];
-    }
 }
