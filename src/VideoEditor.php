@@ -299,7 +299,9 @@ class VideoEditor
         try {
             $page = $browser->createPage();
 
-            Debug::startTimer();
+            Debug::push([
+                'start' => microtime(true)
+            ]);
 
             foreach($this->generateFrames($tmp) as $frame)
             {
@@ -313,8 +315,21 @@ class VideoEditor
                     'optimizeForSpeed' => false 
                 ])->saveToFile("{$tmp}/frame_{$frameNumber}.jpeg");
 
-                Debug::printFromStorage();
-                Debug::startTimer();
+                Debug::merge([
+                    'runTime' => microtime(true) - Debug::get()['start']
+                ]);
+                $data = Debug::get();
+                print "Frame: ". str_pad($data['frame'], 6, '0', STR_PAD_LEFT) . 
+                    " | Procent: " . str_pad($data['procent'], 2, '0', STR_PAD_LEFT) . "%" .
+                    " | Time: " . str_pad(number_format($data['time'], 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
+                    " | RunTime: " . number_format($data['runTime'], 5, '.', ''). "s " .
+                    " | Componentes: " .
+                    implode(", ", $data['components'])
+                    . "\n";
+
+                Debug::push([
+                    'start' => microtime(true)
+                ]);
             }   
 
         } finally {
@@ -413,16 +428,22 @@ class VideoEditor
 
             if(count($this->timeline) == 0) {
 
-                $stats = Debug::calculate();
+                $times = array_column(Debug::getAll(), "runTime");
 
-                $total = Helper::timeString($stats['total']);
-                Debug::clearCalcultor();
+                $min = min($times);
+                $max = max($times);
+                $total = array_sum($times);
+                $avg = $total / count($times);
+
+                $total = Helper::timeString($total);
+
+                Debug::clear();
 
                 print 
                     "Runtime - " .
-                    "min: " . number_format($stats['min'], 5, '.', '') . "s" . 
-                    "| max: " . number_format($stats['max'], 5, '.', '') . "s" .
-                    "| average: " . number_format($stats['avg'], 5, '.', '') . "s" .
+                    "min: " . number_format($min, 5, '.', '') . "s" . 
+                    "| max: " . number_format($max, 5, '.', '') . "s" .
+                    "| average: " . number_format($avg, 5, '.', '') . "s" .
                     "\n"
                     . "Total - {$total}" .
                     "\n";
@@ -430,16 +451,12 @@ class VideoEditor
                 return;
             }
 
-            Debug::pasteToStorage(function($time) use ($renderComponents) {
-                    Debug::pushToCalcultor($time);
-                    return "Frame: ". str_pad($this->frame, 6, '0', STR_PAD_LEFT) . 
-                            " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
-                            " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
-                            " | RunTime: " . number_format($time, 5, '.', ''). "s " .
-                            " | Componentes: " .
-                            implode(", ", $renderComponents)
-                            . "\n";
-            });
+            Debug::merge([
+                'frame' => $this->frame,
+                'procent' => round($this->getTime() / $this->getLength() * 100),
+                'time' => $this->getTime(),
+                'components' => $renderComponents
+            ]);
 
             yield $html;
         }
