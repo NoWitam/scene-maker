@@ -65,4 +65,27 @@ abstract class Helper
         $dir->close();
         return rmdir($dirname);
     }
+
+    public static function timeString(float $seconds)
+    {
+        $time = floor($seconds);
+
+        $ms = str_pad(
+            round(($seconds - $time) * 1000)
+            , 3, '0', STR_PAD_RIGHT
+        );
+
+        $hours = floor($time / 60 / 60);
+
+        $time -= $hours * 60 * 60;
+
+        $minutes = floor($time / 60);
+        $minutes = str_pad($minutes, 2, '0', STR_PAD_LEFT);
+
+        $time -= $minutes * 60;
+
+        $seconds = str_pad($time, 2, '0', STR_PAD_LEFT);
+    
+        return "{$hours}h {$minutes}m {$seconds}s {$ms}ms";
+    }
 }

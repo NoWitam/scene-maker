@@ -279,7 +279,6 @@ class VideoEditor
 
     public function generate(string $tmp, string $videoName)
     {
-        $startTime = microtime(true);
         $extension = "mp4";
 
         Helper::rmdirr($tmp);
@@ -300,6 +299,8 @@ class VideoEditor
         try {
             $page = $browser->createPage();
 
+            Debug::startTimer();
+
             foreach($this->generateFrames($tmp) as $frame)
             {
                 $frameNumber = str_pad($this->frame, 6, '0', STR_PAD_LEFT);
@@ -311,6 +312,9 @@ class VideoEditor
                     'quality' => 100,
                     'optimizeForSpeed' => false 
                 ])->saveToFile("{$tmp}/frame_{$frameNumber}.jpeg");
+
+                Debug::printFromStorage();
+                Debug::startTimer();
             }   
 
         } finally {
@@ -323,9 +327,6 @@ class VideoEditor
         $this->addSounds("video.{$extension}", $videoName . ".{$extension}");
 
         chdir($directory);
-
-        $executionTime = microtime(true) - $startTime;
-        echo "Trwało to {$executionTime} sekund \n";
     }
     private function generateTimeline() 
     {
@@ -380,13 +381,9 @@ class VideoEditor
 
     private function generateFrames(string $tmp)
     {
-        $runTimes = [];
-
         while(true)
         {
             $this->frame++;
-
-            $startTime = microtime(true);
 
             $renderComponents = [];
         
@@ -415,27 +412,34 @@ class VideoEditor
             $html .= "</body>";
 
             if(count($this->timeline) == 0) {
+
+                $stats = Debug::calculate();
+
+                $total = Helper::timeString($stats['total']);
+                Debug::clearCalcultor();
+
                 print 
                     "Runtime - " .
-                    "min: " . number_format(min($runTimes), 5, '.', '') . "s" . 
-                    "| max: " . number_format(max($runTimes), 5, '.', '') . "s" .
-                    "| average: " . number_format(array_sum($runTimes) / count($runTimes), 5, '.', '') . "s"
-                    . "\n";
+                    "min: " . number_format($stats['min'], 5, '.', '') . "s" . 
+                    "| max: " . number_format($stats['max'], 5, '.', '') . "s" .
+                    "| average: " . number_format($stats['avg'], 5, '.', '') . "s" .
+                    "\n"
+                    . "Total - {$total}" .
+                    "\n";
 
                 return;
             }
 
-            $runTime = microtime(true) - $startTime;
-            $runTimes[$this->frame] = $runTime;
-
-            print 
-                "Frame: ". str_pad($this->frame, 6, '0', STR_PAD_LEFT) . 
-                " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
-                " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
-                " | RunTime: " . number_format($runTime, 5, '.', ''). "s " .
-                " | Componentes: " .
-                implode(", ", $renderComponents)
-                . "\n";
+            Debug::pasteToStorage(function($time) use ($renderComponents) {
+                    Debug::pushToCalcultor($time);
+                    return "Frame: ". str_pad($this->frame, 6, '0', STR_PAD_LEFT) . 
+                            " | Procent: " . str_pad(round($this->getTime() / $this->getLength() * 100), 2, '0', STR_PAD_LEFT) . "%" .
+                            " | Time: " . str_pad(number_format($this->getTime(), 5, '.', ''), 9, '0', STR_PAD_LEFT) . "s " .
+                            " | RunTime: " . number_format($time, 5, '.', ''). "s " .
+                            " | Componentes: " .
+                            implode(", ", $renderComponents)
+                            . "\n";
+            });
 
             yield $html;
         }
