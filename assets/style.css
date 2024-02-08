@@ -31,7 +31,7 @@ img {
 }
 
 .animations {
-    display: none;
+    display: none !important;
 }
 
 .animation {
@@ -48,7 +48,7 @@ img {
     position: relative;
 }
 
-.textbox p, .textbox a {
+.textbox p {
     position: relative;
 }
 
@@ -59,7 +59,13 @@ img {
 
 .textbox div {
     position: relative;
-    display: inline;
+    display: inline-block;
+}
+
+.textbox a, .textbox span {
+    word-spacing: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
 }
 
 .textbox p:after, .textbox a:after {
@@ -69,6 +75,9 @@ img {
     top: 0;
     z-index: -1;
     font-size: 1em;
+    word-spacing: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
     -webkit-text-stroke-color: var(--stroke-color);
     -webkit-text-stroke-width: var(--stroke-size);
 }

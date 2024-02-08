@@ -18,7 +18,12 @@ abstract class Debug
 
     public static function merge(array $data): void
     {
-        $index = count(self::$cache) -1;
+        if(count(self::$cache) == 0) {
+            self::$cache[] = $data;
+            return;
+        }
+
+        $index = count(self::$cache) - 1;
         self::$cache[$index] = array_merge(self::$cache[$index], $data);
     }
 

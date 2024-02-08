@@ -69,21 +69,6 @@ class DecoratedText extends Text implements Prepareable
         );
     }
 
-    public function tagContainer(float $time, string $content) : HtmlTag|string
-    {
-        return OpenHtmlTag::make(
-            tag: 'div',
-            content: $content,
-            classes: ["textbox"],
-            styles: $this->mergeStyles([
-                'font-size' => $this->fontSize . "px",
-                'text-align' => $this->align->value,
-                'color' => $this->color,
-                "align-items" => $this->verticalAlign->value
-            ])
-        );
-    }
-
     public function pushDecoratedStyle(int|array $words, array $styles) : self
     {
         $wordsCount = count(

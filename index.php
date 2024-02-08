@@ -64,26 +64,34 @@ try {
     $a->addComponentParallel(
         DecoratedText::make('text1')->size($heigt/2, $width)->position(100, 100, 1)
             ->text("Witamy w naszej bajce RAIZHELL - PULL THE TRIGGER (PHONK)")
-            ->setDelay(1)
+            ->setDelay(0)
             ->fontSize(84)
             ->align(TextAlign::CENTER)
             ->color('#ab2e7a')
             ->stroke(15, '#e9d5ea')
             ->verticalAlign(VerticalAlign::TOP)
+            ->lineHeight(84)
+            ->letterSpacing(20)
             // ->pushDecoratedStyle(3, [
             //     "transform" => "rotate(30deg)"
             // ])
             //->pushDecoratedAnimation(3, Scale::make('anim_scale')->setStart(0)->setLength(1))
             ->pushDecoratedAnimation(3, Shake::make('anim_shake')->setStart(0)->setLength(2)->strength(2))
-            ->pushDecoratedAnimation(3, Wiggle::make('anim_wiggle')->setDelay(1)->setLength(2)->strength(2), ComponentEvent::START)
-            // ->attachStartingAnimation(
-            //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
-            // )
-            // ->attachStartingAnimation(
-            //     Scale::make('animation2')->setLength(6)
-            // )
-            //  ->rotate(15)
+            ->pushDecoratedAnimation(3, Wiggle::make('anim_wiggle')->setDelay(4)->setLength(2)->strength(2), ComponentEvent::START)
+            ->wordSpacing(20)
         ,'image1'
+    );
+
+    $a->attachAnimationRelativeToComponent(
+        'text1',
+        Wiggle::make('animation1')->setLength(2)->setDelay(4),
+        ComponentEvent::START
+    );
+
+    $a->attachAnimationRelativeToComponent(
+        'text1',
+        Scale::make('animation2')->setLength(6),
+        ComponentEvent::START
     );
 
 
@@ -104,7 +112,9 @@ try {
             ->color('#ab2e7a')
             ->stroke(15, '#e9d5ea')
             ->verticalAlign(VerticalAlign::BOT)
-            ->attachAnimation(Scale::make('anim_scale')->setStart(0)->setLength(1))
+            ->lineHeight(94)
+            ->letterSpacing(30)
+            // ->attachAnimation(Scale::make('anim_scale')->setStart(0)->setLength(1))
             // ->attachStartingAnimation(
             //     Wiggle::make('animation1')->setLength(4)->setDelay(2)
             // )
@@ -133,8 +143,8 @@ try {
     
     $tmp = __DIR__ . "/tmp/";
  
-    //$a->showFrame(1, $tmp, __DIR__ . "/output/test");
-    $a->generate($tmp, __DIR__ . "/output/test_2");
+    $a->showFrame(1, $tmp, __DIR__ . "/output/test");
+    //$a->generate($tmp, __DIR__ . "/output/test_2");
     //$a->showTime(3);
 
 } catch( Throwable $e ) { 
