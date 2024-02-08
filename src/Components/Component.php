@@ -57,7 +57,7 @@ abstract class Component implements CanHaveTime
                 classes: ['animation'],
                 styles: $this->animationStyle($animation, $time)
             );
-            $aniamtionCloseLayer = "</{$tag}>";
+            $aniamtionCloseLayer .= "</{$tag}>";
         }
 
         return OpenHtmlTag::make(

@@ -18,6 +18,9 @@ class Text extends Component
     protected TextAlign $align = TextAlign::CENTER;
     protected VerticalAlign $verticalAlign = VerticalAlign::CENTER;
     protected ?string $color = null;
+    protected ?int $wordSpacing = null;
+    protected ?int $letterSpacing = null;
+    protected ?int $lineHeight = null;
 
     public function tag(float $time) : HtmlTag
     {
@@ -30,7 +33,7 @@ class Text extends Component
 
     public function tagContainer(float $time, string $content) : HtmlTag|string
     {
-        return OpenHtmlTag::make(
+        $tag = OpenHtmlTag::make(
             tag: 'div',
             content: $content,
             classes: ["textbox"],
@@ -38,9 +41,14 @@ class Text extends Component
                 'font-size' => $this->fontSize . "px",
                 'text-align' => $this->align->value,
                 'color' => $this->color,
-                "align-items" => $this->verticalAlign->value
+                "align-items" => $this->verticalAlign->value,
+                "line-height" => $this->lineHeight . "px",
+                "letter-spacing" => $this->letterSpacing . "px",
+                "word-spacing" => $this->wordSpacing . "px"
             ])
         );
+        
+        return $tag;
     }
 
     public function text($text) : self
@@ -74,6 +82,27 @@ class Text extends Component
     public function color(string $color) : self 
     {
         $this->color = $color;
+
+        return $this;
+    }
+
+    public function wordSpacing(int $wordSpacing) : self
+    {
+        $this->wordSpacing = $wordSpacing;
+
+        return $this;
+    }
+
+    public function letterSpacing(int $letterSpacing) : self
+    {
+        $this->letterSpacing = $letterSpacing;
+
+        return $this;
+    }
+
+    public function lineHeight(int $lineHeight) : self
+    {
+        $this->lineHeight = $lineHeight;
 
         return $this;
     }
